@@ -106,8 +106,9 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
         // console = new Console();
         $scope.setRegisterState(NOT_REGISTERED);
         var drag = new Draggabilly(document.getElementById('videoSmall'));
-        videoInput = document.getElementById('videoInput');
-        videoOutput = document.getElementById('videoOutput');
+         videoInput = document.getElementById('videoInput');
+        // camVideo  = document.getElementById('camVideo');
+         videoOutput = document.getElementById('videoOutput');
         document.getElementById('name').focus();
        
 
@@ -191,9 +192,7 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
     
     $scope.incomingCall = function(message) {
         // If bussy just reject without disturbing user
-        
-       
-   
+
         if (callState != NO_CALL) {
             var response = {
                 id : 'incomingCallResponse',
@@ -206,8 +205,8 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
         }
     
         $scope.setCallState(PROCESSING_CALL);
-        if (confirm('User ' + message.from
-                + ' is calling you..')) {
+        if (confirm('User ' + message.from + ' is calling you..')) {
+
            $scope.showSpinner(videoInput, videoOutput);
             
        
@@ -215,14 +214,14 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
             audio : true,
             video :{
                 width: 640,
-                framerate : 15
+                framerate : 15,
             }
     }
 
     var options = {
         localVideo : videoInput,
         remoteVideo : videoOutput,
-        onicecandidate : onIceCandidate,
+        ocnicecandidate : onIceCandidate,
         mediaConstraints : constraints
     }
             
@@ -284,7 +283,6 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
     }
     
     $scope.call = function() {
-       
         if (document.getElementById('peer').value == '') {
             window.alert("You must specify the peer name");
             return;
@@ -308,12 +306,13 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
         }
     
         var options = {
-            localVideo : videoInput,
+            camVideo : videoInput,
             remoteVideo : videoOutput,
             onicecandidate : onIceCandidate,
             mediaonstraints : constraints
         }
-    
+    console.log("options",options);
+        console.log("options",options.camVideo);
         webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(
                 error) {
             if (error) {
@@ -339,6 +338,8 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
     }
     
     $scope.stop = function(message) {
+
+
        // $scope.name="";
         $scope.callVisible = true;
         $scope.stopVisible = false;
@@ -408,9 +409,7 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
   
     
 
-    /**
-     * Lightbox utility (to display media pipeline image in a modal dialog)
-     */
+  
     $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
         event.preventDefault();
         $(this).ekkoLightbox();

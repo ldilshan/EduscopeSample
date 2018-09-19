@@ -153,6 +153,18 @@ div#videoSmall {
 	z-index: 10;
 	padding: 0px;
 }
+div#videoCam {
+    width: 240px;
+    height: 180px;
+    padding: 0px;
+    position: absolute;
+    top: 313px;
+    left: 85px;
+    cursor: pointer;
+    z-index: 10;
+    padding: 0px;
+}
+
 
 div.dragged {
 	cursor: all-scroll !important;

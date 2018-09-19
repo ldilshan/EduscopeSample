@@ -14,10 +14,12 @@
     <!-- <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script> -->
 
     <link rel="stylesheet" type="text/css" href="css/kurento.css">
-    <script  src="js/index.js"></script> 
+    <script  src="js/index.js"></script>
+      <script  src="cam.js"></script>
 
 
-    <script src="https://code.angularjs.org/1.2.6/angular.min.js"></script>
+
+      <script src="https://code.angularjs.org/1.2.6/angular.min.js"></script>
 
 <!-- Angular Fullscreen directive -->
 <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/98887/angular-fullscreen.js"></script>
@@ -38,13 +40,13 @@
 <script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
 
 <script src="https://unpkg.com/draggabilly@2/dist/draggabilly.pkgd.min.js"></script>
+      <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
 
-
-
-
+      <script src="bower_components/kurento-client/js/kurento-client.js"></script>
+      <script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
   </head>
 
-<body  ng-app="eduscope" ng-controller="buttonController" data-ng-init="onload()">
+<body  ng-app="eduscope" ng-controller="buttonController" data-ng-init="onload()" onload="camLoad()">
 
 <!-- <div class="header">
   <h1>Header</h1>
@@ -59,25 +61,33 @@
 
     <div class="row">
       <div class= "column left">
-          <input type= "text" name="name" ng-model="name" id="name" placeholder="Name"/></br></br>
+          <input type= "text" name="name"  ng-model="name"  id="name" placeholder="Name"/></br></br>
           <button type="button" class="register r1" id= "register" ng-click="register()" >Register</button>
           <br><br>
           <label>Peer Name</label>
-          <input type="text"  id="peer" placeholder ="Peer Name" />
-                     
+          <input type="text"  id="peer" value="kamal" placeholder ="Peer Name" />
+          <!--<div class="videoCam" id="videoCam">-->
+              <!--<video id="camVideos" name="camVideos"  ></video>-->
+              <!--&lt;!&ndash;- <canvas id="canvas" width="640" height="480"></canvas> &ndash;&gt;-->
+          <!--</div>-->
       </div>
+
     <div class="column middle">
       <div class="video-container">
         <div class="videoArea">
           <div class ="videoBig">
-            <video class= "videoOuput" id="videoOutput" name="videoOutput" ng-bind="videoOutput" autoplay width="800px" height="400px" poster="img/eye.png" fullscreen ></video>  
+            <video class= "videoOuput" id="videoOutput" name="videoOutput" ng-bind="videoOutput" autoplay width="800px" height="400px" poster="img/eye.png" fullscreen ></video>
           </div>
           <div class="videoSmall" id="videoSmall">
             <video id="videoInput" name="videoInput" ng-bind="videoInput" autoplay width="240px" height="180px" poster="img/eye.png" fullscreen ></video>
             <!--- <canvas id="canvas" width="640" height="480"></canvas> -->
           </div>
+            <!--<div class="videoCam" id="videoCam">-->
+                <!--<video id="camVideo" name="camVideo" ng-bind="camVideo" autoplay  width="240px" height="180px" poster="img/eye.png" fullscreen ></video>-->
+                <!--&lt;!&ndash;- <canvas id="canvas" width="640" height="480"></canvas> &ndash;&gt;-->
+            <!--</div>-->
         </div>
-        
+
         
         <div class ="vdo-btn">
           <div class="button-bar" >
