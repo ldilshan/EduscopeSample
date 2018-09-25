@@ -90,13 +90,11 @@ UserRegistry.prototype.removeById = function(id) {
 
 // Represents a B2B active call
 function CallMediaPipeline() {
-    console.log("2");
     this.pipeline = null;
     this.webRtcEndpoint = {};
 }
 
 CallMediaPipeline.prototype.createPipeline = function(callerId, calleeId, ws, callback) {
-    console.log("3");
     var self = this;
     getKurentoClient(function(error, kurentoClient) {
         if (error) {
@@ -175,7 +173,6 @@ CallMediaPipeline.prototype.createPipeline = function(callerId, calleeId, ws, ca
 }
 
 CallMediaPipeline.prototype.generateSdpAnswer = function(id, sdpOffer, callback) {
-    console.log("4");
     this.webRtcEndpoint[id].processOffer(sdpOffer, callback);
     this.webRtcEndpoint[id].gatherCandidates(function(error) {
         if (error) {
@@ -185,7 +182,6 @@ CallMediaPipeline.prototype.generateSdpAnswer = function(id, sdpOffer, callback)
 }
 
 CallMediaPipeline.prototype.release = function() {
-    console.log("5");
     if (this.pipeline) this.pipeline.release();
     this.pipeline = null;
 }
@@ -209,21 +205,16 @@ wss.on('connection', function(ws) {
 
 
     ws.on('error', function(error) {
-        console.log('Connection ' + sessionId + ' error');
         stop(sessionId);
     });
 
     ws.on('close', function() {
-        console.log('Connection ' + sessionId + ' closed');
         stop(sessionId);
         userRegistry.unregister(sessionId);
     });
 
     ws.on('message', function(_message) {
-        console.log("6");
         var message = JSON.parse(_message);
-        console.log('Connection ' + sessionId + ' received message ', message);
-
         switch (message.id) {
         case 'register':
             register(sessionId, message.name, ws);
@@ -258,7 +249,6 @@ wss.on('connection', function(ws) {
 
 // Recover kurentoClient for the first time.
 function getKurentoClient(callback) {
-    console.log("7");
     if (kurentoClient !== null) {
         return callback(null, kurentoClient);
     }
@@ -293,15 +283,13 @@ function stop(sessionId) {
             id: 'stopCommunication',
             message: 'remote user hanged out'
         }
-        stoppedUser.sendMessage(message)
+        stoppedUser.sendMessage(message);
     }
 
     clearCandidatesQueue(sessionId);
 }
 
 function incomingCallResponse(calleeId, from, callResponse, calleeSdp, ws) {
-    console.log("8");
-
     clearCandidatesQueue(calleeId);
 
     function onError(callerReason, calleeReason) {
@@ -375,13 +363,11 @@ function incomingCallResponse(calleeId, from, callResponse, calleeSdp, ws) {
 
 function call(callerId, to, from, sdpOffer) {
     clearCandidatesQueue(callerId);
-    console.log("9");
     var caller = userRegistry.getById(callerId);
     var rejectCause = 'User ' + to + ' is not registered';
     if (userRegistry.getByName(to)) {
         var callee = userRegistry.getByName(to);
         caller.sdpOffer = sdpOffer;
-        console.log( "caller.sdpOffer iss:", caller.sdpOffer);
         callee.peer = from;
         caller.peer = to;
         var message = {
@@ -424,15 +410,12 @@ function register(id, name, ws, callback) {
 }
 
 function clearCandidatesQueue(sessionId) {
-    console.log("10");
     if (candidatesQueue[sessionId]) {
         delete candidatesQueue[sessionId];
     }
 }
 
 function onIceCandidate(sessionId, _candidate) {
-    console.log("11");
-
     var candidate = kurento.getComplexType('IceCandidate')(_candidate);
     var user = userRegistry.getById(sessionId);
 

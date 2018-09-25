@@ -1,11 +1,11 @@
 <!Doctype html>
 
 <html >
-  <head> 
+  <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-   
+
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -14,8 +14,10 @@
     <!-- <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script> -->
 
     <link rel="stylesheet" type="text/css" href="css/kurento.css">
-    <script  src="js/index.js"></script>
-      <script  src="cam.js"></script>
+
+      <!--//js files link-->
+      <script  src="js/index.js"></script>
+      <script  src="js/cameraStream/cam.js"></script>
 
 
 
@@ -46,7 +48,7 @@
       <script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
   </head>
 
-<body  ng-app="eduscope" ng-controller="buttonController" data-ng-init="onload()" onload="camLoad()">
+<body  ng-app="eduscope" ng-controller="buttonController" data-ng-init="onload()">
 
 <!-- <div class="header">
   <h1>Header</h1>
@@ -54,9 +56,9 @@
 </div> -->
 
     <div class="topnav">
-        
-      
+
         <img class="logo" src="img/eduscope_logo.png" alt="Smiley face" height="auto" width="200px">
+
     </div>
 
     <div class="row">
@@ -75,12 +77,23 @@
     <div class="column middle">
       <div class="video-container">
         <div class="videoArea">
+            <!--<div class ="videoBig"  ng-if ="callingTypes.callingId == '3' ">-->
+                <!--<audio class= "audioOutput" id="audioOutput" name="audioOutput" ng-bind="audioOutput" autoplay width="800px" height="400px" poster="img/eye.png" fullscreen ></audio>-->
+            <!--</div>-->
           <div class ="videoBig">
             <video class= "videoOuput" id="videoOutput" name="videoOutput" ng-bind="videoOutput" autoplay width="800px" height="400px" poster="img/eye.png" fullscreen ></video>
           </div>
           <div class="videoSmall" id="videoSmall">
-            <video id="videoInput" name="videoInput" ng-bind="videoInput" autoplay width="240px" height="180px" poster="img/eye.png" fullscreen ></video>
-            <!--- <canvas id="canvas" width="640" height="480"></canvas> -->
+              <div ng-if="callingTypes.callingId == '1'">
+                  <video id="videoInput" name="videoInput" ng-bind="videoInput" autoplay width="240px" height="180px" poster="img/eye.png" fullscreen ></video>
+              </div>
+              <div ng-if="callingTypes.callingId == '2'">
+                  <canvas id="myCanvas" width="240px" height="180px" autoplay style="border:1px solid #d3d3d3;" fullscreen></canvas>
+              </div>
+              <!--<div ng-if="callingTypes.callingId == '3'">-->
+                  <!--<audio id="audioInput" autoplay  control></audio>-->
+              <!--</div>-->
+
           </div>
             <!--<div class="videoCam" id="videoCam">-->
                 <!--<video id="camVideo" name="camVideo" ng-bind="camVideo" autoplay  width="240px" height="180px" poster="img/eye.png" fullscreen ></video>-->
@@ -88,26 +101,32 @@
             <!--</div>-->
         </div>
 
-        
+
         <div class ="vdo-btn">
           <div class="button-bar" >
-             
+
             <div class="btn-group">
               <button title="Mute/Unmute" ng-click="mute()"> <i class="fa fa-microphone"  style="font-size:36px"></i></button>
               <button title="Start/Stop camera" ng-click="onOffVideocam()" id="buttonVideocam"><i class="fa fa-video-camera" style="font-size:36px"></i></button>
-              <button title="Call" name="call" ng-click="call()" ng-show="callVisible"><i class="material-icons" style="font-size:36px">call</i></button>
+              <button title="Call" name="call" ng-click="call(callingTypes)" ng-show="callVisible"><i class="material-icons" style="font-size:36px">call</i></button>
               <button title="Call End" name="callEnd"  ng-click="stop()" ng-show="stopVisible" ><i class="material-icons" style="font-size:36px;color:red">call_end</i></button>
             </div>
 
             <div class="btn-group">
               <button title="Fullscreen" ng-click="goFullscreen()"><i class="fa fa-square-o" style="font-size:36px;"></i></button>
               <button title="Setting"  id="myBtn"><i class="fa fa-cog" style="font-size:36px;"></i></button>
-                  
+
                       <div id="myModal" class="modal">
 
                           <!-- Modal content -->
                           <div class="modal-content">
                             <span class="close">&times;</span>
+                              <label>video Type</label>
+                               <select ng-model="callingTypes.callingId" ng-options="callType.id as callType.type for callType in callingTypes.callings"></select>
+                              </select>
+                              <div ng-if="callingTypes.callingId == '2'">
+                                  <input type="text" ng-model="callingTypes.url" placeholder="camera url" ng-value="url">
+                              </div>
                           <label>Audio input source:</label>
                           <select>
                           <option value="Default">Default</option>
@@ -124,32 +143,32 @@
                           <option value="cam">Hp HD web cam</option>
                           </select>
                           </div>
-                        
+
                         </div>
                         <script>
                           // Get the modal
                           var modal = document.getElementById('myModal');
-                          
+
                           // Get the button that opens the modal
                           var btn = document.getElementById("myBtn");
-                          
+
                           // Get the <span> element that closes the modal
                           var span = document.getElementsByClassName("close")[0];
                           span.onclick = function() {
                               modal.style.display = "none";
                           }
-                          
-                          // When the user clicks the button, open the modal 
+
+                          // When the user clicks the button, open the modal
                           btn.onclick = function() {
                               modal.style.display = "block";
                           }
-                          
+
                           // When the user clicks on <span> (x), close the modal
                           var span = document.getElementsByClassName("close")[0];
                           span.onclick = function() {
                               modal.style.display = "none";
                           }
-                          
+
                           // When the user clicks anywhere outside of the modal, close it
                           window.onclick = function(event) {
                               if (event.target == modal) {
@@ -157,30 +176,20 @@
                               }
                           }
                           </script>
-              
-
-                    
-            </div>      
-                   
-                        
-                        
-              
-             
-            
-            
+            </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   <!-- <div class= "column right">
-    
-            
-  </div> -->
- 
-  </div>
- 
 
-  
+
+  </div> -->
+
+  </div>
+
+
+
 </body>
 </html>

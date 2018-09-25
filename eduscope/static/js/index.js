@@ -5,17 +5,13 @@
 
 var eduscope = angular.module('eduscope', ['FBAngular']);
 eduscope.controller('buttonController', function($scope,$window, Fullscreen){
-   
-
-    $scope.stopVisble = false;
-    $scope.callVisible = true;
 
     $scope.goFullscreen = function () {
 
         if (Fullscreen.isEnabled())
            Fullscreen.cancel();
         else
-           Fullscreen.all();  
+           Fullscreen.all();
      };
 
 
@@ -23,16 +19,27 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
     var videoInput;
     var videoOutput;
     var webRtcPeer;
-    
+    var canvas;
     var registerName = null;
     const NOT_REGISTERED = 0;
     const REGISTERING = 1;
     const REGISTERED = 2;
-    var registerState = null
-    
-    
-    
-    
+    var registerState = null;
+
+    var audioInput;
+    $scope.stopVisble = false;
+    $scope.callVisible = true;
+    var setting;
+    $scope.callingTypes ={};
+    $scope.callingTypes.callingId = "1";
+    $scope.callingTypes.callings = [
+        {id: "1", type: 'localCamera'},
+        {id: "2", type: 'wifiCamera'},
+        {id: "3", type: 'audio' }
+    ];
+
+
+
     $scope.setRegisterState = function(nextState) {
         switch (nextState) {
         case NOT_REGISTERED:
@@ -40,34 +47,34 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
             $('#call').attr('disabled', true);
             $('#terminate').attr('disabled', true);
             break;
-    
+
         case REGISTERING:
             $('#register').attr('disabled', true);
             break;
-    
+
         case REGISTERED:
             $('#register').attr('disabled', true);
             $scope.setCallState(NO_CALL);
             break;
-    
+
         default:
             return;
         }
         registerState = nextState;
     }
-    
+
     const NO_CALL = 0;
     const PROCESSING_CALL = 1;
     const IN_CALL = 2;
     var callState = null
-    
+
     $scope.setCallState = function(nextState) {
         switch (nextState) {
         case NO_CALL:
             $('#call').attr('disabled', false);
             $('#terminate').attr('disabled', true);
             break;
-    
+
         case PROCESSING_CALL:
             $('#call').attr('disabled', true);
             $('#terminate').attr('disabled', true);
@@ -81,36 +88,18 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
         }
         callState = nextState;
     }
-    
-    // window.onload = function() {
-    //     console = new Console();
-    //         $scope.setRegisterState(NOT_REGISTERED);
-    //         var drag = new Draggabilly(document.getElementById('videoSmall'));
-    //         videoInput = document.getElementById('videoInput');
-    //         videoOutput = document.getElementById('videoOutput');
-    //         document.getElementById('name').focus();
-    //         alert("hello");
-    
-    // }
-    
-   
-    //     // document.getElementById('call').addEventListener('click', function() {
-    //     // 	call();
-    //     // });
-    //     // document.getElementById('terminate').addEventListener('click', function() {
-    //     // 	stop();
-    //     // });
-    // }
 
     $scope.onload = function(){
-        // console = new Console();
         $scope.setRegisterState(NOT_REGISTERED);
         var drag = new Draggabilly(document.getElementById('videoSmall'));
-         videoInput = document.getElementById('videoInput');
+
         // camVideo  = document.getElementById('camVideo');
-         videoOutput = document.getElementById('videoOutput');
+         videoOutput = document.getElementById('videoOutput')
+        // videoInput = document.getElementById('videoInput');
         document.getElementById('name').focus();
-       
+       // canvas = document.getElementById("myCanvas");
+
+
 
         // var modal = document.getElementById('myModal');
         // var span = document.getElementsByClassName("close")[0];
@@ -122,19 +111,19 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
         //         modal.style.display = "none";
         //     }
         // }
-    
+
 
 
     }
-    
+
     window.onbeforeunload = function() {
         ws.close();
     }
-    
+
     ws.onmessage = function(message) {
         var parsedMessage = JSON.parse(message.data);
         console.info('Received message: ' + message.data);
-    
+
         switch (parsedMessage.id) {
         case 'registerResponse':
             $scope.resgisterResponse(parsedMessage);
@@ -159,7 +148,7 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
             console.error('Unrecognized message', parsedMessage);
         }
     }
-    
+
    $scope.resgisterResponse = function(message) {
         if (message.response == 'accepted') {
             $scope.setRegisterState(REGISTERED);
@@ -171,7 +160,7 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
             alert('Error registering user. See console for further information.');
         }
     }
-    
+
     $scope.callResponse = function(message) {
         if (message.response != 'accepted') {
             console.info('Call not accepted by peer. Closing call');
@@ -184,32 +173,34 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
             webRtcPeer.processAnswer(message.sdpAnswer);
         }
     }
-    
+
     $scope.startCommunication = function(message) {
         $scope.setCallState(IN_CALL);
         webRtcPeer.processAnswer(message.sdpAnswer);
     }
-    
+
     $scope.incomingCall = function(message) {
         // If bussy just reject without disturbing user
 
+        $scope.stopVisible = true;
+        $scope.callVisible = false;
         if (callState != NO_CALL) {
             var response = {
                 id : 'incomingCallResponse',
                 from : message.from,
                 callResponse : 'reject',
                 message : 'bussy'
-    
+
             };
             return $scope.sendMessage(response);
         }
-    
+
         $scope.setCallState(PROCESSING_CALL);
         if (confirm('User ' + message.from + ' is calling you..')) {
+            videoInput = document.getElementById('videoInput');
+        $scope.showSpinner(videoInput, videoOutput);
 
-           $scope.showSpinner(videoInput, videoOutput);
-            
-       
+
            var constraints = {
             audio : true,
             video :{
@@ -218,22 +209,23 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
             }
     }
 
+
     var options = {
         localVideo : videoInput,
         remoteVideo : videoOutput,
         ocnicecandidate : onIceCandidate,
         mediaConstraints : constraints
     }
-            
-    
-    
+
+
+
             webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
                     function(error) {
                         if (error) {
                             console.error(error);
                             $scope.setCallState(NO_CALL);
                         }
-    
+
                         this.generateOffer(function(error, offerSdp) {
                             if (error) {
                                 console.error(error);
@@ -246,11 +238,11 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
                                 sdpOffer : offerSdp
                             };
                             $scope.callVisible = false;
-                         
+
                             $scope.sendMessage(response);
                         });
                     });
-                    
+
         } else {
             var response = {
                 id : 'incomingCallResponse',
@@ -262,64 +254,87 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
            $scope.stop(true);
         }
     }
-    
+
    $scope.register = function() {
-       
-        
+
+
         var name = document.getElementById('name').value;
         if (name == '') {
             window.alert("Enter the  Name");
             return;
         }
-    
+
        $scope.setRegisterState(REGISTERING);
-    
+
         var message = {
             id : 'register',
             name : name
         };
-        $scope.sendMessage(message);
+        $scope.sendMessage( message);
         //document.getElementById('peer').focus();
     }
-    
-    $scope.call = function() {
+
+    $scope.call = function(data) {
         if (document.getElementById('peer').value == '') {
             window.alert("You must specify the peer name");
             return;
         }
-    
+
         $scope.setCallState(PROCESSING_CALL);
-        
+
         $scope.stopVisible = true;
         $scope.callVisible = false;
-    
 
-        
-        $scope.showSpinner(videoInput, videoOutput);
-        
+        var options;
+
         var constraints = {
                 audio : true,
-                video :{
-                    width:640,
+                 video :{
+                    width: 640,
                     framerate : 15
-                }
+            }
         }
-    
-        var options = {
-            camVideo : videoInput,
-            remoteVideo : videoOutput,
-            onicecandidate : onIceCandidate,
-            mediaonstraints : constraints
+
+        if(data.callingId == '2') {
+           canvas = document.getElementById("myCanvas");
+            camLoad(data);
+            var canvasVideo = canvas.captureStream();
+            options = {
+                videoStream: canvasVideo,
+                remoteVideo: videoOutput,
+                onicecandidate: onIceCandidate,
+
+            };
         }
-    console.log("options",options);
-        console.log("options",options.camVideo);
+        // else if(data.callingId == '3'){
+        //     audioInput = document.getElementById(audioInput);
+        //     options = {
+        //         lcoalVideo : audioInput,
+        //         remoteStream : audioOutput,
+        //         onicecandidate : onIceCandidate
+        //     };
+
+        else {
+
+            videoInput = document.getElementById('videoInput');
+            $scope.showSpinner(videoInput, videoOutput);
+            options = {
+                localVideo: videoInput,
+                remoteVideo: videoOutput,
+                onicecandidate: onIceCandidate,
+                mediaonstraints: constraints
+            };
+       }
+
+
+
         webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(
                 error) {
             if (error) {
                 console.error(error);
                $scope.setCallState(NO_CALL);
             }
-    
+
             this.generateOffer(function(error, offerSdp) {
                 if (error) {
                     console.error(error);
@@ -334,11 +349,10 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
                 $scope.sendMessage(message);
             });
         });
-    
-    }
-    
-    $scope.stop = function(message) {
 
+    }
+
+    $scope.stop = function(message) {
 
        // $scope.name="";
         $scope.callVisible = true;
@@ -347,7 +361,7 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
         if (webRtcPeer) {
             webRtcPeer.dispose();
             webRtcPeer = null;
-    
+
             if (!message) {
                 var message = {
                     id : 'stop'
@@ -355,42 +369,40 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
                $scope.sendMessage(message);
             }
         }
-        $scope.hideSpinner(videoInput, videoOutput);
+       $scope.hideSpinner(videoInput, videoOutput);
     }
     console.log("you are");
     $scope.sendMessage = function(message) {
 
         var jsonMessage = JSON.stringify(message);
-        console.log("Sending message: " + jsonMessage);
-        console.log("hello world");
         ws.send(jsonMessage);
     }
-    
+
     function onIceCandidate(candidate) {
         console.log('Local candidate' + JSON.stringify(candidate));
-    
+
         var message = {
             id : 'onIceCandidate',
             candidate : candidate
         }
         $scope.sendMessage(message);
     }
-    
+
     $scope.showSpinner = function() {
         for (var i = 0; i < arguments.length; i++) {
             arguments[i].poster = './img/transparent-1px.png';
             arguments[i].style.background = 'center transparent url("./img/spinner.gif") no-repeat';
         }
     }
-    
-    $scope.hideSpinner = function() {
+
+            $scope.hideSpinner = function() {
         for (var i = 0; i < arguments.length; i++) {
             arguments[i].src = '';
             arguments[i].poster = './img/eye.png';
             arguments[i].style.background = '';
         }
     }
-    
+
     $scope.mute = function(){
 
        var videoInput = document.getElementById("videoInput");
@@ -399,21 +411,21 @@ eduscope.controller('buttonController', function($scope,$window, Fullscreen){
        videoOutput.muted = true;
     }
         // $scope.setting = function(){
-            
+
         //     modal.style.display = "block";
         // }
 
-  
-    
-    // When the user clicks anywhere outside of the modal, close it
-  
-    
 
-  
+
+    // When the user clicks anywhere outside of the modal, close it
+
+
+
+
     $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
         event.preventDefault();
         $(this).ekkoLightbox();
     });
- 
- 
+
+
 });
